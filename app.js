@@ -21,13 +21,13 @@ app.get("/api/pokemons/:id", (req, res) => {
   res.json(success(message, pokemon));
 });
 
-//Retourne la liste entière au format JSON
+//GET : Retourne la liste entière au format JSON
 app.get("/api/pokemons", (req, res) => {
   const message = `Here is the list of all Pokemons. There is ${pokemons.length} pokemons around`;
   res.json(success(message, pokemons));
 });
 
-//POST un nouveau pokémon
+//POST : ajoute un nouveau pokémon
 app.post("/api/pokemons", (req, res) => {
   const id = getSoloId(pokemons);
   const pokemonCreated = { ...req.body, ...{ id: id, created: new Date() } };
@@ -35,6 +35,29 @@ app.post("/api/pokemons", (req, res) => {
   const message = `Pokemon ${pokemonCreated.name} has been created bro !!`;
   res.json(success(message, pokemonCreated));
 });
+
+//PUT : mise à jours d'un pokémon
+app.put("/api/pokemons/:id", (req, res) => {
+  const id = parseInt(req.params.id)
+  const pokemonUpdated = { ...req.body, id: id }
+  pokemons = pokemons.map(pokemon => {
+    return pokemon.id === id ? pokemonUpdated : pokemon
+  })
+  const message = `Pokemon ${pokemonUpdated.name} has been updated bro !!`;
+  res.json(success(message, pokemonUpdated));
+})
+
+//DELETE : supprime un pokémon
+app.delete("/api/pokemons/:id", (req, res) => {
+  const id = parseInt(req.params.id)
+  const pokemonToDelete = pokemons.find(pokemon => pokemon.id === id);
+  pokemons.filter(pokemon => pokemon.id != id)
+      const message = `Pokemon ${pokemonToDelete.name} has been deleted man !!`
+    res.json(success(message, pokemonToDelete))
+    
+    
+  })
+
 
 app.listen(port, () =>
   console.log(`Listened on port http://localhost:${port}`)
