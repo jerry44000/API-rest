@@ -1,74 +1,31 @@
 const express = require("express");
-let pokemons = require("./mock-pokemons.js");
 const morgan = require("morgan");
 const favicon = require("serve-favicon");
 const bodyParser = require("body-parser");
-const { Sequelize } = require("sequelize");
-const { success, getSoloId } = require("./helper.js");
+const sequelize = require('./src/db/sequelize');
 
 const app = express();
 const port = 5000;
-const sequelize = new Sequelize("pokedex", "root", "", {
-  host: "localhost",
-  dialect: "mariadb",
-  dialectOptions: {
-    timezone: "Etc/GMT-2",
-  },
-  logging: false,
-});
-
-sequelize.authenticate()
-  .then(_ => console.log('connection to database has been established'))
-  .catch(error => console.log(`Can't connect to database : ${error}`))
-
+ 
 app
   .use(favicon(__dirname + "/favicon.ico"))
   .use(morgan("dev"))
   .use(bodyParser.json());
 
-app.get("/", (req, res) => res.send("Hello, Express3"));
+sequelize.initDb();
 
-app.get("/api/pokemons/:id", (req, res) => {
-  const id = parseInt(req.params.id);
-  const pokemon = pokemons.find((pokemon) => pokemon.id === id);
-  const message = "Pokemon found";
-  res.json(success(message, pokemon));
-});
+//Points de terminaison
 
-//GET : Retourne la liste entière au format JSON
-app.get("/api/pokemons", (req, res) => {
-  const message = `Here is the list of all Pokemons. There is ${pokemons.length} pokemons around`;
-  res.json(success(message, pokemons));
-});
-
-//POST : ajoute un nouveau pokémon
-app.post("/api/pokemons", (req, res) => {
-  const id = getSoloId(pokemons);
-  const pokemonCreated = { ...req.body, ...{ id: id, created: new Date() } };
-  pokemons.push(pokemonCreated);
-  const message = `Pokemon ${pokemonCreated.name} has been created bro !!`;
-  res.json(success(message, pokemonCreated));
-});
-
-//PUT : mise à jours d'un pokémon
-app.put("/api/pokemons/:id", (req, res) => {
-  const id = parseInt(req.params.id);
-  const pokemonUpdated = { ...req.body, id: id };
-  pokemons = pokemons.map((pokemon) => {
-    return pokemon.id === id ? pokemonUpdated : pokemon;
-  });
-  const message = `Pokemon ${pokemonUpdated.name} has been updated bro !!`;
-  res.json(success(message, pokemonUpdated));
-});
-
-//DELETE : supprime un pokémon
-app.delete("/api/pokemons/:id", (req, res) => {
-  const id = parseInt(req.params.id);
-  const pokemonToDelete = pokemons.find((pokemon) => pokemon.id === id);
-  pokemons.filter((pokemon) => pokemon.id != id);
-  const message = `Pokemon ${pokemonToDelete.name} has been deleted man !!`;
-  res.json(success(message, pokemonToDelete));
-});
+//Trouve tout les pokemons
+require('./src/routes/findAllPokemons.js')(app);
+//Trouve un pokemon par ID
+require('./src/routes/findPokemonByPk.js')(app);
+//Créer un pokemon
+require('./src/routes/createPokemons.js')(app);
+//Mise à jours du pokemon
+require('./src/routes/updatePokemon.js')(app);
+//Suppression d'un pokemon
+require('./src/routes/deletePokemons')(app);
 
 app.listen(port, () =>
   console.log(`Listened on port http://localhost:${port}`)
