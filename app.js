@@ -2,15 +2,29 @@ const express = require("express");
 let pokemons = require("./mock-pokemons.js");
 const morgan = require("morgan");
 const favicon = require("serve-favicon");
-const bodyParser = require('body-parser');
+const bodyParser = require("body-parser");
+const { Sequelize } = require("sequelize");
 const { success, getSoloId } = require("./helper.js");
+
 const app = express();
 const port = 5000;
+const sequelize = new Sequelize("pokedex", "root", "", {
+  host: "localhost",
+  dialect: "mariadb",
+  dialectOptions: {
+    timezone: "Etc/GMT-2",
+  },
+  logging: false,
+});
+
+sequelize.authenticate()
+  .then(_ => console.log('connection to database has been established'))
+  .catch(error => console.log(`Can't connect to database : ${error}`))
 
 app
   .use(favicon(__dirname + "/favicon.ico"))
   .use(morgan("dev"))
-  .use(bodyParser.json())
+  .use(bodyParser.json());
 
 app.get("/", (req, res) => res.send("Hello, Express3"));
 
@@ -38,26 +52,23 @@ app.post("/api/pokemons", (req, res) => {
 
 //PUT : mise à jours d'un pokémon
 app.put("/api/pokemons/:id", (req, res) => {
-  const id = parseInt(req.params.id)
-  const pokemonUpdated = { ...req.body, id: id }
-  pokemons = pokemons.map(pokemon => {
-    return pokemon.id === id ? pokemonUpdated : pokemon
-  })
+  const id = parseInt(req.params.id);
+  const pokemonUpdated = { ...req.body, id: id };
+  pokemons = pokemons.map((pokemon) => {
+    return pokemon.id === id ? pokemonUpdated : pokemon;
+  });
   const message = `Pokemon ${pokemonUpdated.name} has been updated bro !!`;
   res.json(success(message, pokemonUpdated));
-})
+});
 
 //DELETE : supprime un pokémon
 app.delete("/api/pokemons/:id", (req, res) => {
-  const id = parseInt(req.params.id)
-  const pokemonToDelete = pokemons.find(pokemon => pokemon.id === id);
-  pokemons.filter(pokemon => pokemon.id != id)
-      const message = `Pokemon ${pokemonToDelete.name} has been deleted man !!`
-    res.json(success(message, pokemonToDelete))
-    
-    
-  })
-
+  const id = parseInt(req.params.id);
+  const pokemonToDelete = pokemons.find((pokemon) => pokemon.id === id);
+  pokemons.filter((pokemon) => pokemon.id != id);
+  const message = `Pokemon ${pokemonToDelete.name} has been deleted man !!`;
+  res.json(success(message, pokemonToDelete));
+});
 
 app.listen(port, () =>
   console.log(`Listened on port http://localhost:${port}`)
