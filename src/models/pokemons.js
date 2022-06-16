@@ -1,3 +1,5 @@
+const validTypes = ['Plante', "Poison", "Feu", "Eau", "Insecte", "Vol", "Normal", "Electrik", "Fée"]
+
 module.exports = (sequelize, DataTypes) => {
   return sequelize.define(
     "Pokemon",
@@ -10,6 +12,9 @@ module.exports = (sequelize, DataTypes) => {
       name: {
         type: DataTypes.STRING,
         allowNull: false,
+        unique: {
+          msg: 'Name already exist.'
+        },
         validate: {
           notEmpty: { msg: "Name can not be empty." },
           notNull: { msg: "Name is required." },
@@ -23,12 +28,12 @@ module.exports = (sequelize, DataTypes) => {
           notNull: { msg: "Health points are required." },
           max: {
             args: [999],
-            msg: "Hp can't go beyond 999."
+            msg: "Hp can't go beyond 999.",
           },
           min: {
             args: [0],
-            msg: "Hp can't be less than 0."
-          }
+            msg: "Hp can't be less than 0.",
+          },
         },
       },
       cp: {
@@ -39,12 +44,12 @@ module.exports = (sequelize, DataTypes) => {
           notNull: { msg: "Cp is required." },
           max: {
             args: [99],
-            msg: "Hp can't go beyond 99."
+            msg: "Hp can't go beyond 99.",
           },
           min: {
             args: [0],
-            msg: "Hp can't be less than 0."
-          }
+            msg: "Hp can't be less than 0.",
+          },
         },
       },
       picture: {
@@ -63,6 +68,21 @@ module.exports = (sequelize, DataTypes) => {
         },
         set(types) {
           this.setDataValue("types", types.join());
+        },
+        validate: {
+          isTypesValide(value) {
+            if (!value) {
+              throw new Error("A Pokemon must have at least one type.");
+            }
+            if (value.split(",").length > 3) {
+              throw new Error("A pokemon can not have more than 3 types.");
+            }
+            value.split(',').forEach(type => {
+              if(!validTypes.includes(type)){
+                throw new Error(`Types must be from this list : ${validTypes}.`)
+              }
+            });
+          },
         },
       },
     },
