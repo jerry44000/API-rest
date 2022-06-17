@@ -1,5 +1,7 @@
 const { User } = require("../db/sequelize");
 const bcrypt = require("bcrypt");
+const jtw = require('jsonwebtoken');
+const privateKey = require('../auth/private_key.js');
 
 module.exports = (app) => {
   app.post("/api/login", (req, res) => {
@@ -16,8 +18,15 @@ module.exports = (app) => {
               const message = `Wrong password..`;
               return res.status(401).json({ message });
             }
+
+            //JTW
+            const token = jtw.sign(
+                { userId: user.id },
+                privateKey,
+                { expiresIn: '24h'} 
+            )
             const message = `User connected.`;
-            return res.json({ message, data: user });
+            return res.json({ message, data: user, token });
           });
       })
       .catch((error) => {
