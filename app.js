@@ -26,6 +26,8 @@ require("./src/routes/createPokemons.js")(app);
 require("./src/routes/updatePokemon.js")(app);
 //Suppression d'un pokemon
 require("./src/routes/deletePokemons")(app);
+//Login
+require('./src/routes/login.js');
 
 //Gestion des erreurs 404
 app.use(({ res }) => {
