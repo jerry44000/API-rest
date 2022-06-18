@@ -4,7 +4,8 @@
   "description": "API rest to handle Pokemon",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon app.js"
+    "start": "NODE_ENV=production node app.js",
+    "dev": "NODE_ENV=development nodemon app.js"
   },
   "author": "Shai",
   "license": "ISC",
@@ -18,7 +19,6 @@
     "serve-favicon": "^2.5.0"
   },
   "devDependencies": {
-    "morgan": "^1.10.0",
     "nodemon": "^2.0.16"
   }
 }
